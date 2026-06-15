@@ -2,6 +2,44 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+FEATURES = [
+    "HR",
+    "O2Sat",
+    "Temp",
+    "SBP",
+    "MAP",
+    "DBP",
+    "Resp",
+    "BaseExcess",
+    "HCO3",
+    "FiO2",
+    "pH",
+    "PaCO2",
+    "SaO2",
+    "AST",
+    "BUN",
+    "Alkalinephos",
+    "Calcium",
+    "Chloride",
+    "Creatinine",
+    "Glucose",
+    "Lactate",
+    "Magnesium",
+    "Phosphate",
+    "Potassium",
+    "Bilirubin_total",
+    "Hct",
+    "Hgb",
+    "PTT",
+    "WBC",
+    "Platelets",
+    "Age",
+    "Gender",
+    "Unit1",
+    "Unit2",
+    "HospAdmTime"
+]
+
 RANDOM_STATE = 42
 
 # Caricamento snapshot
@@ -58,3 +96,15 @@ def split_level2(train_df: pd.DataFrame, test_df: pd.DataFrame):
     y_test = test_non_sepsis["macro_label"]
 
     return X_train, y_train, X_test, y_test
+
+# Prepara i dati di un singolo paziente convertendo il dizionario che contiene le feature cliniche
+def prepare_patient(patient_data):
+    if not isinstance(patient_data, dict):
+        raise TypeError("Patient data deve essere un tipo dictionary")
+
+    df = pd.DataFrame([patient_data])
+    for col in FEATURES:
+        if col not in df:
+            df[col] = None
+
+    return df[FEATURES]

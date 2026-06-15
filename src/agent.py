@@ -15,7 +15,6 @@ class MedicalAgent:
     """
 
     def __init__(self, model_wrapper):
-        # model_wrapper: oggetto che gestisce predizione della sepsi e predizione multiclasse
         self.model = model_wrapper
 
     def evaluate(self, patient_data):
@@ -35,6 +34,10 @@ class MedicalAgent:
         # -------------------------
         # 1. PREDIZIONE ML
         # -------------------------
+
+            # Validazione input
+            if not isinstance(patient_data, dict):
+                raise ValueError("patient_data deve essere dictionary")
 
             # Otteniamo probabilità di sepsi e predizione multiclasse
             prob_sepsis, macro_pred = self.model.predict(patient_data)
