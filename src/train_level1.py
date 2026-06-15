@@ -68,7 +68,7 @@ def main():
         custom_pred = (y_proba >= thr).astype(int)
         eval_binary(y_test, custom_pred, title=f"{name} | LEVEL 1 (custom threshold)")
 
-        joblib.dump(model, "sepsis_model.pkl")
+        joblib.dump(model,f"models/sepsis_{name}.pkl")
 
 if __name__ == "__main__":
     main()

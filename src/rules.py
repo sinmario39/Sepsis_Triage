@@ -83,7 +83,7 @@ def compute_respiratory_score(data):
     hr = safe_get(data, "HR")
 
     if o2 is not None:
-        score += add_score(o2 < 88, 4)
+        score += add_score(o2 < 88, 3)
     elif o2 is not None:
         score += add_score(o2 < 92, 4)
     score += add_score(resp is not None and (resp > 20 or resp < 12), 3)

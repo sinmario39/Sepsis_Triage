@@ -60,7 +60,7 @@ def main():
         # Importanze solo per tree
         tree_importances(model, X_train.columns, top_k=15)
 
-        joblib.dump(model, "macro_model.pkl")
+        joblib.dump(model,f"models/macro_{name}.pkl")
 
 if __name__ == "__main__":
     main()
