@@ -53,51 +53,82 @@ def make_decision(prob_sepsis, macro_pred, scores):
             "confidence": final_sepsis,
             "reason": "High sepsis risk"
         }
-
-    # Altre classi
-    other_scores = {
-        k: v for k, v in scores.items() if k != "sepsis" # Prende "scores" e rimuove sepsis
-    }
-
-    # Boost della predizione ML multiclasse
-    # Rafforziamo la classe suggerita dal modello ML, evidenziando il contributo del modello statistico
-    if macro_pred in other_scores:
-        other_scores[macro_pred] += 0.1
-    else:
-        # Penalizzazione in caso di incoerenza tra le predizioni
-        for k in other_scores:
-            other_scores[k] *= 0.95
-
-    # Penalizzazione dello stato "Stable" in caso di segnali clinici anomali
-    if "stable" in other_scores:
-        if any(v > 0.5 for k, v in other_scores.items() if k != "stable"):
-            other_scores["stable"] *= 0.7
-
-    # -------------------------
-    # SCELTA MIGLIORE
-    # -------------------------
-
-    # Ordina le classi per punteggio
-    sorted_classes = sorted(other_scores.items(), key=lambda x: x[1], reverse=True)
-    best_class, best_score = sorted_classes[0]
-
-    # Seconda migliore (se esiste)
-    second_class, second_score = (None, None)
-    if len(sorted_classes) > 1:
-        second_class, second_score = sorted_classes[1]
-
-    # Gap tra primo e secondo
-    gap = best_score - (second_score if second_score is not None else 0)
-
-    # Caso incertezza (Caso di punteggi vicini)
-    if gap < 0.1 and second_class is not None: # Il sistema restituisce due diagnosi probabili simulando l'incertezza medica
-        return [best_class, second_class], {
-            "confidence": best_score,
-            "reason": "Low confidence - multiple possible conditions"
+    if final_sepsis > 0.55:
+        return "sepsis", {
+            "confidence": final_sepsis,
+            "reason": "Suggested further monitoring for sepsis symptoms"
         }
 
-    # Caso normale
-    return best_class, {
-        "confidence": best_score,
-        "reason": "Score-based decision with ML support"
-    }
+    if prob_sepsis < 0.85:
+        # Altre classi
+        other_scores = {
+            k: v for k, v in scores.items() if k != "sepsis" # Prende "scores" e rimuove sepsis
+        }
+
+        # Boost della predizione ML multiclasse
+        # Rafforziamo la classe suggerita dal modello ML, evidenziando il contributo del modello statistico
+        if macro_pred in other_scores:
+            other_scores[macro_pred] += 0.2
+        else:
+            # Penalizzazione in caso di incoerenza tra le predizioni
+            for k in other_scores:
+                other_scores[k] *= 0.95
+
+        # Penalizzazione dello stato "Stable" in caso di segnali clinici anomali
+        if "stable" in other_scores:
+            if any(v > 0.5 for k, v in other_scores.items() if k != "stable"):
+                other_scores["stable"] *= 0.7
+
+        # -------------------------
+        # SCELTA MIGLIORE
+        # -------------------------
+
+        # Ordina le classi per punteggio
+        sorted_classes = sorted(other_scores.items(), key=lambda x: x[1], reverse=True)
+        best_class, best_score = sorted_classes[0]
+
+        # Seconda migliore (se esiste)
+        second_class, second_score = (None, None)
+        if len(sorted_classes) > 1:
+            second_class, second_score = sorted_classes[1]
+
+        # Gap tra primo e secondo
+        gap = best_score - (second_score if second_score is not None else 0)
+
+        # Caso incertezza (Caso di punteggi vicini)
+        if gap < 0.1 and second_class is not None:  # Il sistema restituisce due diagnosi probabili simulando l'incertezza medica
+            return [best_class, second_class], {
+                "confidence": best_score,
+                "reason": "Low confidence - multiple possible conditions"
+            }
+
+        # Caso ambiguità (Caso di sintomi generici)
+        if gap < 0.1:  # In caso di ambiguità il sistema riduce leggermente il peso delle classi basate su sintomi molto comuni
+
+            # Penalizza leggermente classi troppo generiche
+            generic_classes = ["respiratory", "hemodynamic"]
+
+            for cls in generic_classes:
+                if cls in other_scores:
+                    other_scores[cls] *= 0.95
+
+            # Ricalcolo ranking dopo penalizzazione
+            sorted_classes = sorted(
+                other_scores.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )
+
+            best_class, best_score = sorted_classes[0]
+            second_class, second_score = sorted_classes[1]
+
+            return [best_class, second_class], {
+                "confidence": best_score,
+                "reason": "Ambiguous condition - generic symptoms reduced"
+            }
+
+        # Caso normale
+        return best_class, {
+            "confidence": best_score,
+            "reason": "Score-based decision with ML support"
+        }

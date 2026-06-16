@@ -49,11 +49,11 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         elif o2 < 92:
             clinical_findings.append("ipossia")
 
-    if wbc is not None and (wbc > 12000 or wbc < 4000):
+    if wbc is not None and (wbc < 4 or wbc > 11):
         clinical_findings.append("globuli bianchi alterati")
 
-    if platelets is not None and platelets < 150000:
-        clinical_findings.append("piastrine basse")
+    if platelets is not None and platelets < 150:
+            clinical_findings.append("piastrine basse")
 
     if glucose is not None:
         if glucose > 125:
@@ -93,8 +93,6 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         if (temp > 38 or temp < 36) and hr > 100 and resp > 20 and sbp < 90:
             clinical_findings.append("stato di shock settico")
 
-
-
     # -------------------------
     # DECISIONE
     # -------------------------
@@ -122,19 +120,20 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
     explanation += "La decisione combina modello di machine learning e regole cliniche.\n"
 
     if macro_pred:
-        explanation += f"Il modello multiclasse suggerisce: {macro_pred}.\n"
+        if prob_sepsis < 0.85:
+            explanation += f"Il modello multiclasse suggerisce: {macro_pred}.\n"
 
-    if uncertainty_text:
-        explanation += "\n" + uncertainty_text
+            if uncertainty_text:
+                explanation += "\n" + uncertainty_text
 
-    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+            sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-    explanation += "\nCondizioni più probabili secondo il sistema a regole:\n"
-    for k, v in sorted_scores[:2]:
-        explanation += f"- {k} (score: {round(v, 2)})\n"
+            explanation += "\nCondizioni più probabili secondo il sistema a regole:\n"
+            for k, v in sorted_scores[:2]:
+                explanation += f"- {k} (score: {round(v, 2)})\n"
 
-    if decision_info:
-        explanation += f"\nMotivazione decisione: {decision_info.get('reason', '')}\n"
-        explanation += f"Confidenza: {round(decision_info.get('confidence', 0), 2)}\n"
+            if decision_info:
+                explanation += f"\nMotivazione decisione: {decision_info.get('reason', '')}\n"
+                explanation += f"Confidenza: {round(decision_info.get('confidence', 0), 2)}\n"
 
     return explanation

@@ -57,11 +57,11 @@ def compute_sepsis_score(data):
     score += add_score(temp is not None and (temp > 38 or temp < 36), 1)
     score += add_score(hr is not None and hr > 100, 1)
     score += add_score(resp is not None and resp > 20, 2)
-    score += add_score(wbc is not None and (wbc > 12000 or wbc < 4000), 2)
+    score += add_score(wbc is not None and (wbc < 4 or wbc > 11), 2)
     score += add_score(creat is not None and creat > 1.5, 1)
     score += add_score(lactate is not None and lactate > 2, 3)
     score += add_score(sbp is not None and sbp < 90, 2)
-    score += add_score(platelets is not None and platelets < 150000, 1)
+    score += add_score(platelets is not None and platelets < 150, 1)
     score += age_modifier(data)
 
     # Regola combinata delle soglie (Shock Settico)
@@ -159,7 +159,7 @@ def compute_stable_score(data):
     score += add_score(hr is not None and 60 <= hr <= 100, 1)
     score += add_score(o2 is not None and  o2 >= 95, 1)
     score += add_score(glucose is not None and 70 < glucose < 125, 1)
-    score += add_score(wbc is not None and 4000 <= wbc <= 12000, 1)
+    score += add_score(wbc is not None and 4 <= wbc <= 11, 1)
     score += add_score(map_val is not None and 70 <= map_val < 90, 1)
     score += add_score(resp is not None and 12 < resp < 20, 1)
 
