@@ -1,18 +1,4 @@
 
-def get_sepsis_level(prob):
-    # Aggiunta della distinzione tra i livelli di sepsi
-
-    if prob >= 0.85:
-        return "CRITICO"
-
-    if prob >= 0.70:
-        return "ALTO"
-
-    if prob >= 0.55:
-        return "MONITORAGGIO"
-
-    return "BASSO"
-
 def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision_output, decision_info):
 
     clinical_findings = []
@@ -130,33 +116,24 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
             explanation += f"- {f}\n"
 
     explanation += "\n"
-    explanation += "La valutazione finale integra:\n- probabilità stimata dal modello ML\n- classificazione multiclasse\n- evidenze estratte dal sistema a regole\n"
-    explanation += f"\nProbabilità stimata di sepsi: {round(prob_sepsis, 2)}\n"
-    level = get_sepsis_level(prob_sepsis)
-    explanation += (f"Livello rischio di sepsi: {level}\n")
+    explanation += f"Probabilità stimata di sepsi: {round(prob_sepsis, 2)}.\n"
+    explanation += "La decisione combina modello di machine learning e regole cliniche.\n"
 
-    # La classificazione alternativa viene mostrata solo quando il rischio settico non è critico.
-    # In presenza di rischio critico la sepsi ha priorità
-    if macro_pred and prob_sepsis < 0.85:
+    if macro_pred:
+        if prob_sepsis < 0.85:
+            explanation += f"Il modello multiclasse suggerisce: {macro_pred}.\n"
 
-        if uncertainty_text:
-            explanation += "\n" + uncertainty_text
+            if uncertainty_text:
+                explanation += "\n" + uncertainty_text
 
-        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+            sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-        explanation += "\nCondizioni più probabili secondo il sistema a regole:\n"
-        for k, v in sorted_scores[:2]:
-            explanation += f"- {k} (score: {round(v, 2)})\n"
+            explanation += "\nCondizioni più probabili secondo il sistema a regole:\n"
+            for k, v in sorted_scores[:2]:
+                explanation += f"- {k} (score: {round(v, 2)})\n"
 
-        if prob_sepsis > 0.55:
-            explanation += (f"Il modello multiclasse evidenzia ulteriori pattern clinici compatibili con: {macro_pred}.\n")
-        else:
-            explanation += (f"Il modello multiclasse identifica i pattern clinici come compatibili con: {macro_pred}.\n")
-
-    else:
-        explanation += (
-            "La probabilità di sepsi supera la soglia critica. "
-            "Il sistema dà priorità alla valutazione della sepsi rispetto alle classificazioni alternative.\n"
-        )
+            if decision_info:
+                explanation += f"\nMotivazione decisione: {decision_info.get('reason', '')}\n"
+                explanation += f"Confidenza: {round(decision_info.get('confidence', 0), 2)}\n"
 
     return explanation

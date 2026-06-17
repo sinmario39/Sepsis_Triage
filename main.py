@@ -117,21 +117,19 @@ def main():
         print("\n=== PATIENT DATA ===\n")
 
         for k, v in patient_data.items():
-            if pd.isna(v):
-                print(f"{k}: non disponibile")
-            else:
-                print(f"{k}:  {v}")
+            print(f"{k}: {v}")
 
         # Stampa risultati della diagnosi
-        print("\n=== DECISION ENGINE ===\n")
+        print("\n=== DIAGNOSTIC RESULT ===\n")
 
-        print("Decisione finale:", result["diagnosis"])
-        print("Score decisionale:", round(result["confidence"], 2))
-        print("Motivazione:", result["reason"])
+        print("Diagnosis:", result["diagnosis"])
+        print("Confidence:", round(result["confidence"], 2))
+        print("Reason:", result["reason"])
 
-        print("\n=== RULE BASED EXPLANATION WITH EVIDENCES ===\n")
+        print("\n--- Explanation ---\n")
         print(result["explanation"])
 
+    print("\n### Execution completed successfully ###\n")
 
 if __name__ == "__main__":
     main()

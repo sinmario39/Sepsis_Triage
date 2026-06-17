@@ -79,8 +79,6 @@ class MedicalAgent:
 
             return {
                 "diagnosis": diagnosis,
-                # probabilità direttamente dal modello ML
-                "sepsis_probability": prob_sepsis,
                 "confidence": decision_info["confidence"],
                 "reason": decision_info["reason"],
                 "explanation": explanation,
