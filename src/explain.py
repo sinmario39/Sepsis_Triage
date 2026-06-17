@@ -122,14 +122,18 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
     # OUTPUT
     # -------------------------
 
-    explanation = diagnosis_text + "\n"
-    explanation += "\nLa valutazione finale integra:\n- probabilità stimata dal modello ML\n- classificazione multiclasse\n- evidenze estratte dal sistema a regole\n"
+    explanation = diagnosis_text + ".\n\n"
 
-    explanation += "\n"
     if clinical_findings:
         explanation += "Evidenze cliniche rilevate:\n"
         for f in clinical_findings:
             explanation += f"- {f}\n"
+
+    explanation += "\n"
+    explanation += "La valutazione finale integra:\n- probabilità stimata dal modello ML\n- classificazione multiclasse\n- evidenze estratte dal sistema a regole\n"
+    explanation += f"\nProbabilità stimata di sepsi: {round(prob_sepsis, 2)}\n"
+    level = get_sepsis_level(prob_sepsis)
+    explanation += (f"Livello rischio di sepsi: {level}\n")
 
     # La classificazione alternativa viene mostrata solo quando il rischio settico non è critico.
     # In presenza di rischio critico la sepsi ha priorità
@@ -144,25 +148,15 @@ def generate_explanation(prob_sepsis, macro_pred, scores, patient_data, decision
         for k, v in sorted_scores[:2]:
             explanation += f"- {k} (score: {round(v, 2)})\n"
 
+        if prob_sepsis > 0.55:
+            explanation += (f"Il modello multiclasse evidenzia ulteriori pattern clinici compatibili con: {macro_pred}.\n")
+        else:
+            explanation += (f"Il modello multiclasse identifica i pattern clinici come compatibili con: {macro_pred}.\n")
+
     else:
         explanation += (
             "La probabilità di sepsi supera la soglia critica. "
             "Il sistema dà priorità alla valutazione della sepsi rispetto alle classificazioni alternative.\n"
         )
-
-    explanation += "\n=== ML SEPSIS ANALYSIS ===\n"
-    explanation += "\n"
-    explanation += f"Probabilità stimata di sepsi: {round(prob_sepsis, 2)}\n"
-    level = get_sepsis_level(prob_sepsis)
-    explanation += (f"Livello rischio di sepsi: {level}\n")
-
-    explanation += "\n=== ML MULTICLASS ANALYSIS ===\n"
-    explanation += "\n"
-    if prob_sepsis > 0.55:
-        explanation += (
-            f"Il modello multiclasse, basato sui dati disponibili, evidenzia ulteriori pattern clinici compatibili con: {macro_pred}.\n")
-    else:
-        explanation += (
-            f"Il modello multiclasse, basato sui dati disponibili, identifica i pattern clinici come compatibili con: {macro_pred}.\n")
 
     return explanation

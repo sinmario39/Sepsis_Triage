@@ -122,16 +122,15 @@ def main():
             else:
                 print(f"{k}:  {v}")
 
-        print("\n=== RULE BASED EXPLANATION WITH EVIDENCES ===\n")
-        print(result["explanation"])
-
         # Stampa risultati della diagnosi
-        print("=== DECISION ENGINE ===")
+        print("\n=== DECISION ENGINE ===\n")
 
-        print("\n")
         print("Decisione finale:", result["diagnosis"])
         print("Score decisionale:", round(result["confidence"], 2))
         print("Motivazione:", result["reason"])
+
+        print("\n=== RULE BASED EXPLANATION WITH EVIDENCES ===\n")
+        print(result["explanation"])
 
 
 if __name__ == "__main__":
