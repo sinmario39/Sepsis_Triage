@@ -77,7 +77,7 @@ def make_decision(prob_sepsis, macro_pred, scores):
         # Penalizzazione dello stato "Stable" in caso di segnali clinici anomali
         if "stable" in other_scores:
             if any(v > 0.5 for k, v in other_scores.items() if k != "stable"):
-                other_scores["stable"] *= 0.7
+                other_scores["stable"] *= 0.3
 
         # -------------------------
         # SCELTA MIGLIORE
